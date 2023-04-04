@@ -1,0 +1,106 @@
+.card {
+    margin: auto;
+    margin-top: 50px;
+  }
+
+  #register-body, #login-body {
+    background: linear-gradient(to right, #6cacd2  50%, #ffffff 50%) !important;
+  }
+
+  body{
+
+    background-color: #6cacd2 !important;
+  }
+
+  .card-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: -17px;
+  }
+  
+
+  .card-logo {
+    margin-bottom: 20px !important;
+    max-width: 200px;
+    height: auto;
+    /* margin-bottom: 100px; */
+  }
+
+  label{
+
+    color: #6cacd2;
+    font-weight: bold;
+  }
+  
+  .register-btn-container{
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .register-btn:hover{
+
+    background: none;
+    color: #fe544b;
+    border-color: none;
+  }
+
+  .register-btn-container:focus{
+    outline: none !important;
+  }
+
+  input:focus{
+    border-color: #6cacd2 !important;
+    box-shadow: none !important;
+    
+  }
+
+  .register-btn{
+    color: white;
+    font-weight: 600;
+    background-color: #ea652d;
+    border-color: #fe544b;
+    width: 50%;
+  }
+
+  input::placeholder {
+    color: #6cacd2 !important;
+    font-style: italic;
+    font-size: small;
+  }
+
+  .register-txt{
+
+    font-weight: 700!important;
+    color: #2a3453!important;
+    line-height: 1.2;
+  }
+
+  .btn-login-container{
+
+    text-align: center;
+    font-weight: 700!important;
+    line-height: 1.2;
+  }
+
+  .login-btn:focus{
+
+    box-shadow: none !important;
+  }
+
+  .login-btn{
+    color: #fe544b;
+  }
+
+  .errorLabel{
+
+    display: none;
+  }
+
+  .form-control.is-invalid {
+    border-color: red;
+  }
+
+

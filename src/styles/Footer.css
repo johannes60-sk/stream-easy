@@ -1,0 +1,15 @@
+.footer-logo{
+    max-width: 100px; 
+    height: auto;
+}
+
+#footer{
+    background-color: white !important;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+i{
+    font-size: 20px !important;
+}

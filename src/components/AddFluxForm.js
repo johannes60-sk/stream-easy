@@ -85,7 +85,7 @@ export default function AddFluxForm() {
       const sendData = async (data) => {
         try {
           await axios
-            .post("http://localhost:3004/api/send-data-on-server", data)
+            .post("https://api-stream-ease.vercel.app/api/send-data-on-server", data)
             .then(async (response) => {
               if (response.status === 200) {
                 const form = document.getElementById("fluxForm");

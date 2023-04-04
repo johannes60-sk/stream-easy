@@ -32,7 +32,7 @@ export default function EditAndDeleteJsonFile() {
   const fetchFilesList = async () => {
     try {
       await axios
-        .get("http://localhost:3004/api/get-jsonfilname-on-serve")
+        .get("https://api-stream-ease.vercel.app/api/get-jsonfilname-on-serve")
         .then((response) => {
           if (response.status === 200) {
             setfilesList(response.data.jsonFilename);
@@ -50,7 +50,7 @@ export default function EditAndDeleteJsonFile() {
 
     try {
       const response = await axios.get(
-        `http://localhost:3004/api/get-jsonFile-on-serve/${event.target.value}`
+        `https://api-stream-ease.vercel.app/api/get-jsonFile-on-serve/${event.target.value}`
       );
 
       if (response.status === 200) {
@@ -77,7 +77,7 @@ export default function EditAndDeleteJsonFile() {
 
     try {
       await axios
-        .post("http://localhost:3004/api/send-modified-file-on-server", data)
+        .post("https://api-stream-ease.vercel.app/api/send-modified-file-on-server", data)
         .then((response) => {
           if (response.status === 200) {
             setshowAlert({ show: true, response: response.data, statut: true });
@@ -128,7 +128,7 @@ export default function EditAndDeleteJsonFile() {
     setdeleteConfirm(true);
 
     try {
-      await axios.post(`http://localhost:3004/api/delete-file-on-serve/${selectedFile}`)
+      await axios.post(`https://api-stream-ease.vercel.app/api/delete-file-on-serve/${selectedFile}`)
         .then(async (response) => {
           if (response.status === 200) {
 

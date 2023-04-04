@@ -16,7 +16,7 @@ export default function EditAndDeleteJsonFile() {
 
   const [fileContent, setfileContent] = useState("");
 
-  const [showAlert, setshowAlert] = useState({show: false, response: "", statut: false,});
+  const [showAlert, setshowAlert] = useState({ show: false, response: "", statut: false, });
 
   const [showModal, setshowModal] = useState(false);
 
@@ -46,13 +46,19 @@ export default function EditAndDeleteJsonFile() {
 
     setSelectedFile(event.target.value);
 
+    setIsLoading(true);
+
     try {
       const response = await axios.get(
         `http://localhost:3004/api/get-jsonFile-on-serve/${event.target.value}`
       );
 
       if (response.status === 200) {
+
+        setIsLoading(false);
+
         setfileContent(response.data.fileContent);
+
       }
     } catch (error) {
       console.log(error);
@@ -99,7 +105,7 @@ export default function EditAndDeleteJsonFile() {
     }
   };
 
-// Verfiie en temps reel si le contenu du fichier est un json valide
+  // Verfiie en temps reel si le contenu du fichier est un json valide
   const validateJson = (json) => {
     try {
       //  JSON.parse(json);
@@ -126,23 +132,31 @@ export default function EditAndDeleteJsonFile() {
         .then(async (response) => {
           if (response.status === 200) {
 
-            setdeleteConfirm(false);
+            await fetchFilesList()
+              .then(() => {
 
-            setshowModal(false);
+                setdeleteConfirm(false);
 
-            setfileContent('');
+                setshowModal(false);
 
-            setTimeout(() => {
-              setshowAlert({
-                show: true,
-                response: response.data,
-                statut: true,
-              });
-            }, 1000);
+                setfileContent('');
 
-            setTimeout(() => {
-              setshowAlert({ show: null, response: "", statut: null });
-            }, 4000);
+                setTimeout(() => {
+                  setshowAlert({
+                    show: true,
+                    response: response.data,
+                    statut: true,
+                  });
+                }, 1000);
+
+                setTimeout(() => {
+                  setshowAlert({ show: null, response: "", statut: null });
+                }, 4000);
+
+              }).catch((error) => {
+                console.log(error);
+                console.log("Erreur lors de la mis a jour de la liste des fichiers json !");
+              })
           }
         })
         .catch((error) => {
@@ -193,94 +207,106 @@ export default function EditAndDeleteJsonFile() {
             </select>
             <div
               className={`alert ${showAlert.show
-                  ? showAlert.statut
-                    ? "alert-success"
-                    : "alert-danger"
-                  : "d-none"
+                ? showAlert.statut
+                  ? "alert-success"
+                  : "alert-danger"
+                : "d-none"
                 } col-md-4 offset-4 p-1 text-center fs-5  mt-4 animate__animated animate__lightSpeedInRight`}
             >
               {showAlert.response}
             </div>
 
-            {fileContent && (
-              <form onSubmit={handleSubmit} className="mt-3 " id="form">
-                <div className="form-group">
-                  {!isValidJson && (
-                    <div className="invalid-feedback">
-                      Le format de votre JSON est invalide{" "}
-                      <i className="bi bi-info-circle" />
-                    </div>
-                  )}
-                  <textarea
-                    className="form-control textarea"
-                    spellcheck="false"
-                    value={fileContent}
-                    onChange={(event) => {
-                      setfileContent(event.target.value);
-                      validateJson(event.target.value);
-                    }}
-                  ></textarea>
-                </div>
-                <div className="d-flex  btn-container mt-3">
-                  <div className=" btn-edit-josn-file">
-                    <button
-                      type="submit"
-                      className="btn "
-                      disabled={!isValidJson}
-                    >
-                      Modifier <i className="bi bi-pencil" />
-                    </button>
+            {(fileContent ) ? (
+                <form onSubmit={handleSubmit} className="mt-3 " id="form">
+                  <div className="form-group">
+                    {!isValidJson && (
+                      <div className="invalid-feedback">
+                        Le format de votre JSON est invalide{" "}
+                        <i className="bi bi-info-circle" />
+                      </div>
+                    )}
+                    <textarea
+                      className="form-control textarea"
+                      spellcheck="false"
+                      value={fileContent}
+                      onChange={(event) => {
+                        setfileContent(event.target.value);
+                        validateJson(event.target.value);
+                      }}
+                    />
                   </div>
-                  <div className=" btn-delete-json-file">
-                    <div className="btn" onClick={handleDeleteJson}>
-                      Supprimer <i className="bi bi-trash3" />
+                  <div className="d-flex  btn-container mt-3">
+                    <div className=" btn-edit-josn-file">
+                      <button
+                        type="submit"
+                        className="btn "
+                        disabled={!isValidJson}
+                      >
+                        Modifier <i className="bi bi-pencil" />
+                      </button>
                     </div>
-                  </div>
-                </div>
-
-                {/* Afficher la boîte de dialogue si isDialogOpen est true */}
-                <Modal isOpen={showModal} className="Modal">
-                  <h3 className="add-new-channel-txt mb-4">
-                    Voulez-vous supprimer votre fichier json ?
-                  </h3>
-
-                  {deleteConfirm ? (
-                    <div className="d-flex justify-content-center">
-                      <ClipLoader
-                        color={"#007bff"}
-                        loading={deleteConfirm}
-                        css={spinnerStyle}
-                        size={50}
-                      />
-                    </div>
-                  ) : (
-                    <div className="container d-flex  btn-container">
-                      <div className="row">
-                        <div className="col-md-6 ">
-                          <button
-                            className="btn oui-modal-btn "
-                            onClick={handleConfirmDeleteJson}
-                          >
-                            Oui
-                          </button>
-                        </div>
-
-                        <div className=" col-md-6  ">
-                          <button
-                            className="btn valid-form-modal-btn"
-                            onClick={() => {
-                              setshowModal(false);
-                            }}
-                          >
-                            Non
-                          </button>
-                        </div>
+                    <div className=" btn-delete-json-file">
+                      <div className="btn" onClick={handleDeleteJson}>
+                        Supprimer <i className="bi bi-trash3" />
                       </div>
                     </div>
-                  )}
-                </Modal>
-              </form>
-            )}
+                  </div>
+
+                  {/* Afficher la boîte de dialogue si isDialogOpen est true */}
+                  <Modal isOpen={showModal} className="Modal">
+                    <h3 className="add-new-channel-txt mb-4">
+                      Voulez-vous supprimer votre fichier json ?
+                    </h3>
+
+                    {deleteConfirm ? (
+                      <div className="d-flex justify-content-center">
+                        <ClipLoader
+                          color={"#007bff"}
+                          loading={deleteConfirm}
+                          css={spinnerStyle}
+                          size={50}
+                        />
+                      </div>
+                    ) : (
+                      <div className="container d-flex  btn-container">
+                        <div className="row">
+                          <div className="col-md-6 ">
+                            <button
+                              className="btn oui-modal-btn "
+                              onClick={handleConfirmDeleteJson}
+                            >
+                              Oui
+                            </button>
+                          </div>
+
+                          <div className=" col-md-6  ">
+                            <button
+                              className="btn valid-form-modal-btn"
+                              onClick={() => {
+                                setshowModal(false);
+                              }}
+                            >
+                              Non
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Modal>
+                </form>
+                ) : (isLoading) && (
+
+                  <div className="d-flex justify-content-center"  style={{ marginTop: "170px" }}>
+                  <ClipLoader
+                    color={"#007bff"}
+                    loading={isLoading}
+                    css={spinnerStyle}
+                    size={80}
+                  />
+                </div>
+
+                )
+            }
           </div>
         </div>
       </div>

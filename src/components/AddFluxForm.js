@@ -85,7 +85,7 @@ export default function AddFluxForm() {
       const sendData = async (data) => {
         try {
           await axios
-            .post("https://api-stream-ease.vercel.app/api/send-data-on-server", data)
+            .post(`${process.env.REACT_APP_API_URL}/send-data-on-server`, data)
             .then(async (response) => {
               if (response.status === 200) {
                 const form = document.getElementById("fluxForm");
@@ -166,12 +166,13 @@ export default function AddFluxForm() {
             </h2>
 
             <div
-              className={`alert ${showAlert.show
-                ? showAlert.success
-                  ? "alert-success"
-                  : "alert-danger"
-                : "d-none"
-                } animate__animated animate__lightSpeedInRight`}
+              className={`alert ${
+                showAlert.show
+                  ? showAlert.success
+                    ? "alert-success"
+                    : "alert-danger"
+                  : "d-none"
+              } animate__animated animate__lightSpeedInRight`}
             >
               {showAlert.response}
             </div>
@@ -183,11 +184,12 @@ export default function AddFluxForm() {
                 </label>
                 <input
                   type="text"
-                  className={`form-control ${formIsEmpty &&
+                  className={`form-control ${
+                    formIsEmpty &&
                     document.getElementById("filname").value === ""
-                    ? "is-invalid"
-                    : ""
-                    }`}
+                      ? "is-invalid"
+                      : ""
+                  }`}
                   id="filname"
                   name="filname"
                   required
@@ -201,10 +203,11 @@ export default function AddFluxForm() {
                 </label>
                 <input
                   type="text"
-                  className={`form-control ${formIsEmpty && document.getElementById("name").value === ""
-                    ? "is-invalid"
-                    : ""
-                    }`}
+                  className={`form-control ${
+                    formIsEmpty && document.getElementById("name").value === ""
+                      ? "is-invalid"
+                      : ""
+                  }`}
                   id="name"
                   name="name"
                   required
@@ -220,10 +223,11 @@ export default function AddFluxForm() {
                   type="text"
                   id="url"
                   name="url"
-                  className={`form-control ${formIsEmpty && document.getElementById("url").value === ""
-                    ? "is-invalid"
-                    : ""
-                    }`}
+                  className={`form-control ${
+                    formIsEmpty && document.getElementById("url").value === ""
+                      ? "is-invalid"
+                      : ""
+                  }`}
                   required
                   placeholder="Entrez l'URL du flux vidéo"
                 />
@@ -237,11 +241,12 @@ export default function AddFluxForm() {
                   type="text"
                   id="drmChannelId"
                   name="drmChannelId"
-                  className={`form-control ${formIsEmpty &&
+                  className={`form-control ${
+                    formIsEmpty &&
                     document.getElementById("drmChannelId").value === ""
-                    ? "is-invalid"
-                    : ""
-                    }`}
+                      ? "is-invalid"
+                      : ""
+                  }`}
                   placeholder="Entrez l'id du flux vidéo"
                 />
               </div>

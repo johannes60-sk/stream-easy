@@ -9,65 +9,59 @@ import Footer from "./Footer";
 
 export default function EditAndDeleteJsonFile() {
   const [filesList, setfilesList] = useState([]);
-
   const [selectedFile, setSelectedFile] = useState("");
-
   const [isValidJson, setIsValidJson] = useState(true);
-
   const [fileContent, setfileContent] = useState("");
-
-  const [showAlert, setshowAlert] = useState({ show: false, response: "", statut: false, });
-
+  const [showAlert, setshowAlert] = useState({
+    show: false,
+    response: "",
+    statut: false,
+  });
   const [showModal, setshowModal] = useState(false);
-
   const [deleteConfirm, setdeleteConfirm] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    console.log("data", process.env.REACT_APP_API_URL);
+
     fetchFilesList();
   }, []);
 
-  // Recuperer la liste des fichiers json sur le serveur
   const fetchFilesList = async () => {
     try {
-      await axios
-        .get("https://api-stream-ease.vercel.app/api/get-jsonfilname-on-serve")
-        .then((response) => {
-          if (response.status === 200) {
-            setfilesList(response.data.jsonFilename);
-          }
-        });
-    } catch (error) { }
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/get-jsonfilname-on-serve`
+      );
+      if (response.status === 200 && response.data.jsonFilename) {
+        setfilesList(response.data.jsonFilename);
+      }
+    } catch (error) {
+      console.error("Error fetching files list:", error);
+      setfilesList([]); // Set empty array on error
+    }
   };
 
-  // Recupere le contenu du fichier choisir et l'affiche
   const handleFileSelect = async (event) => {
-
     setSelectedFile(event.target.value);
-
     setIsLoading(true);
 
     try {
       const response = await axios.get(
-        `https://api-stream-ease.vercel.app/api/get-jsonFile-on-serve/${event.target.value}`
+        `${process.env.REACT_APP_API_URL}/get-jsonFile-on-serve/${event.target.value}`
       );
 
       if (response.status === 200) {
-
-        setIsLoading(false);
-
         setfileContent(response.data.fileContent);
-
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching file content:", error);
+      setfileContent("");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  //Pour modifier le fichier json
   const handleSubmit = async (event) => {
-
     event.preventDefault();
 
     const data = {
@@ -76,41 +70,33 @@ export default function EditAndDeleteJsonFile() {
     };
 
     try {
-      await axios
-        .post("https://api-stream-ease.vercel.app/api/send-modified-file-on-server", data)
-        .then((response) => {
-          if (response.status === 200) {
-            setshowAlert({ show: true, response: response.data, statut: true });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/send-modified-file-on-server`,
+        data
+      );
 
-            setTimeout(() => {
-              setshowAlert({ show: null, response: "", statut: null });
-            }, 3000);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-
-          setshowAlert({
-            show: false,
-            response: error.response.data,
-            statut: false,
-          });
-
-          setTimeout(() => {
-            setshowAlert({ show: null, response: "", statut: null });
-          }, 3000);
-        });
+      if (response.status === 200) {
+        setshowAlert({ show: true, response: response.data, statut: true });
+        setTimeout(() => {
+          setshowAlert({ show: null, response: "", statut: null });
+        }, 3000);
+      }
     } catch (error) {
-      console.log("Erreur de la requete");
+      console.error("Error updating file:", error);
+      setshowAlert({
+        show: true,
+        response: error.response?.data || "Error updating file",
+        statut: false,
+      });
+      setTimeout(() => {
+        setshowAlert({ show: null, response: "", statut: null });
+      }, 3000);
     }
   };
 
-  // Verfiie en temps reel si le contenu du fichier est un json valide
   const validateJson = (json) => {
     try {
-      //  JSON.parse(json);
       JSON.stringify(JSON.parse(json), null, 4);
-
       setIsValidJson(true);
       setfileContent(json);
     } catch (error) {
@@ -118,185 +104,161 @@ export default function EditAndDeleteJsonFile() {
     }
   };
 
-  // Pour effacer un fichier json
-  const handleDeleteJson = async () => {
+  const handleDeleteJson = () => {
     setshowModal(true);
   };
 
   const handleConfirmDeleteJson = async () => {
-
     setdeleteConfirm(true);
 
     try {
-      await axios.post(`https://api-stream-ease.vercel.app/api/delete-file-on-serve/${selectedFile}`)
-        .then(async (response) => {
-          if (response.status === 200) {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/delete-file-on-serve/${selectedFile}`
+      );
 
-            await fetchFilesList()
-              .then(() => {
-
-                setdeleteConfirm(false);
-
-                setshowModal(false);
-
-                setfileContent('');
-
-                setTimeout(() => {
-                  setshowAlert({
-                    show: true,
-                    response: response.data,
-                    statut: true,
-                  });
-                }, 1000);
-
-                setTimeout(() => {
-                  setshowAlert({ show: null, response: "", statut: null });
-                }, 4000);
-
-              }).catch((error) => {
-                console.log(error);
-                console.log("Erreur lors de la mis a jour de la liste des fichiers json !");
-              })
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          setdeleteConfirm(false);
-
-          setshowModal(false);
-
-          setTimeout(() => {
-            setshowAlert({
-              show: true,
-              response: error.response.data.message,
-              statut: false,
-            });
-          }, 1000);
-
-          setTimeout(() => {
-            setshowAlert({ show: null, response: "", statut: null });
-          }, 4000);
+      if (response.status === 200) {
+        await fetchFilesList();
+        setdeleteConfirm(false);
+        setshowModal(false);
+        setfileContent("");
+        setshowAlert({
+          show: true,
+          response: response.data,
+          statut: true,
         });
+        setTimeout(() => {
+          setshowAlert({ show: null, response: "", statut: null });
+        }, 4000);
+      }
     } catch (error) {
-      console.log("Erreur de la requete !");
+      console.error("Error deleting file:", error);
+      setdeleteConfirm(false);
+      setshowModal(false);
+      setshowAlert({
+        show: true,
+        response: error.response?.data?.message || "Error deleting file",
+        statut: false,
+      });
+      setTimeout(() => {
+        setshowAlert({ show: null, response: "", statut: null });
+      }, 4000);
     }
   };
 
   return (
     <div>
       <Header />
-
       <div className="container-flui" style={{ marginTop: "105px" }}>
         <div className="row justify-content-center">
           <div className="col-md-10">
-            <h2 className="">Editer ou effacer un fichier JSON</h2>
+            <h2>Editer ou effacer un fichier JSON</h2>
             <select
               className="form-select"
               id="floatingSelect"
               value={selectedFile}
               onChange={handleFileSelect}
             >
-              <option value="" className="option">
-                --- Choisir un fichier Json ---
-              </option>
-              {filesList.map((file) => (
-                <option key={file.name} value={file.name}>
-                  {file.name}
-                </option>
-              ))}
+              <option value="">--- Choisir un fichier Json ---</option>
+              {Array.isArray(filesList) &&
+                filesList.map((file) => (
+                  <option key={file.name} value={file.name}>
+                    {file.name}
+                  </option>
+                ))}
             </select>
+
             <div
-              className={`alert ${showAlert.show
-                ? showAlert.statut
-                  ? "alert-success"
-                  : "alert-danger"
-                : "d-none"
-                } col-md-4 offset-4 p-1 text-center fs-5  mt-4 animate__animated animate__lightSpeedInRight`}
+              className={`alert ${
+                showAlert.show
+                  ? showAlert.statut
+                    ? "alert-success"
+                    : "alert-danger"
+                  : "d-none"
+              } col-md-4 offset-4 p-1 text-center fs-5 mt-4 animate__animated animate__lightSpeedInRight`}
             >
               {showAlert.response}
             </div>
 
-            {(fileContent ) ? (
-                <form onSubmit={handleSubmit} className="mt-3 " id="form">
-                  <div className="form-group">
-                    {!isValidJson && (
-                      <div className="invalid-feedback">
-                        Le format de votre JSON est invalide{" "}
-                        <i className="bi bi-info-circle" />
-                      </div>
-                    )}
-                    <textarea
-                      className="form-control textarea"
-                      spellcheck="false"
-                      value={fileContent}
-                      onChange={(event) => {
-                        setfileContent(event.target.value);
-                        validateJson(event.target.value);
-                      }}
-                    />
-                  </div>
-                  <div className="d-flex  btn-container mt-3">
-                    <div className=" btn-edit-josn-file">
-                      <button
-                        type="submit"
-                        className="btn "
-                        disabled={!isValidJson}
-                      >
-                        Modifier <i className="bi bi-pencil" />
-                      </button>
+            {fileContent ? (
+              <form onSubmit={handleSubmit} className="mt-3" id="form">
+                <div className="form-group">
+                  {!isValidJson && (
+                    <div className="invalid-feedback">
+                      Le format de votre JSON est invalide{" "}
+                      <i className="bi bi-info-circle" />
                     </div>
-                    <div className=" btn-delete-json-file">
-                      <div className="btn" onClick={handleDeleteJson}>
-                        Supprimer <i className="bi bi-trash3" />
-                      </div>
+                  )}
+                  <textarea
+                    className="form-control textarea"
+                    spellCheck="false"
+                    value={fileContent}
+                    onChange={(event) => {
+                      setfileContent(event.target.value);
+                      validateJson(event.target.value);
+                    }}
+                  />
+                </div>
+                <div className="d-flex btn-container mt-3">
+                  <div className="btn-edit-josn-file">
+                    <button
+                      type="submit"
+                      className="btn"
+                      disabled={!isValidJson}
+                    >
+                      Modifier <i className="bi bi-pencil" />
+                    </button>
+                  </div>
+                  <div className="btn-delete-json-file">
+                    <div className="btn" onClick={handleDeleteJson}>
+                      Supprimer <i className="bi bi-trash3" />
                     </div>
                   </div>
+                </div>
 
-                  {/* Afficher la boîte de dialogue si isDialogOpen est true */}
-                  <Modal isOpen={showModal} className="Modal">
-                    <h3 className="add-new-channel-txt mb-4">
-                      Voulez-vous supprimer votre fichier json ?
-                    </h3>
+                <Modal isOpen={showModal} className="Modal">
+                  <h3 className="add-new-channel-txt mb-4">
+                    Voulez-vous supprimer votre fichier json ?
+                  </h3>
 
-                    {deleteConfirm ? (
-                      <div className="d-flex justify-content-center">
-                        <ClipLoader
-                          color={"#007bff"}
-                          loading={deleteConfirm}
-                          css={spinnerStyle}
-                          size={50}
-                        />
-                      </div>
-                    ) : (
-                      <div className="container d-flex  btn-container">
-                        <div className="row">
-                          <div className="col-md-6 ">
-                            <button
-                              className="btn oui-modal-btn "
-                              onClick={handleConfirmDeleteJson}
-                            >
-                              Oui
-                            </button>
-                          </div>
-
-                          <div className=" col-md-6  ">
-                            <button
-                              className="btn valid-form-modal-btn"
-                              onClick={() => {
-                                setshowModal(false);
-                              }}
-                            >
-                              Non
-                            </button>
-                          </div>
+                  {deleteConfirm ? (
+                    <div className="d-flex justify-content-center">
+                      <ClipLoader
+                        color={"#007bff"}
+                        loading={deleteConfirm}
+                        css={spinnerStyle}
+                        size={50}
+                      />
+                    </div>
+                  ) : (
+                    <div className="container d-flex btn-container">
+                      <div className="row">
+                        <div className="col-md-6">
+                          <button
+                            className="btn oui-modal-btn"
+                            onClick={handleConfirmDeleteJson}
+                          >
+                            Oui
+                          </button>
+                        </div>
+                        <div className="col-md-6">
+                          <button
+                            className="btn valid-form-modal-btn"
+                            onClick={() => setshowModal(false)}
+                          >
+                            Non
+                          </button>
                         </div>
                       </div>
-                    )}
-                  </Modal>
-                </form>
-                ) : (isLoading) && (
-
-                  <div className="d-flex justify-content-center"  style={{ marginTop: "170px" }}>
+                    </div>
+                  )}
+                </Modal>
+              </form>
+            ) : (
+              isLoading && (
+                <div
+                  className="d-flex justify-content-center"
+                  style={{ marginTop: "170px" }}
+                >
                   <ClipLoader
                     color={"#007bff"}
                     loading={isLoading}
@@ -304,9 +266,8 @@ export default function EditAndDeleteJsonFile() {
                     size={80}
                   />
                 </div>
-
-                )
-            }
+              )
+            )}
           </div>
         </div>
       </div>
